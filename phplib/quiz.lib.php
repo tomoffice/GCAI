@@ -52,26 +52,36 @@ function process_exam_question($account,$total_exam_quiz,$level)
 function generate_quiz($total_exam_quiz,$data,$account,$level)
 {
 ////////////////////////////////////////////////////////製造題目
-				
-					for($i=0;$i<$total_exam_quiz;$i++)
-					{
-						$RandKey[$i] = array_rand($data[$i],1);
-						//echo $data[$i][$RandKey[$i]]["word"]."<br>".$data[$i][$RandKey[$i]]["explanation"]."<br>".$data[$i][$RandKey[$i]]["id"]."<br>";
-						$member_id = get_member_id($account);
-						$question[$i] = $data[$i][$RandKey[$i]]["word"]; //題目
-						$correct[$i] = $data[$i][$RandKey[$i]]["explanation"]; //出題的答案
-						insert_exam_record($member_id['id'],$level,$question[$i],$correct[$i]);
-					}
-					//$_SESSION["correct"] = $correct;
-					//$_SESSION["json_correct"] = json_encode($correct);
-					$data[0] = $question;
-					$data[1] = $correct;
-					return $data;
-				
-					//return $correct;
-					////////////////////////////////////////////////////////製造題目
+$member_id = get_member_id($account);
+$tmp = query_exam_id($member_id['id']);
+if($tmp == false)
+{	
+	$exam_id = 1;
+	insert_exam_log($member_id['id'],$level,$exam_id);
 }
-function mark_paper($student_answer,$correct)
+else
+{		
+	$exam_id = $tmp+1;
+	insert_exam_log($member_id['id'],$level,$exam_id);		
+} 		
+for($i=0;$i<$total_exam_quiz;$i++)
+{
+	$RandKey[$i] = array_rand($data[$i],1);
+	//echo $data[$i][$RandKey[$i]]["word"]."<br>".$data[$i][$RandKey[$i]]["explanation"]."<br>".$data[$i][$RandKey[$i]]["id"]."<br>";
+	$question[$i] = $data[$i][$RandKey[$i]]["word"]; //題目
+	$correct[$i] = $data[$i][$RandKey[$i]]["explanation"]; //出題的答案
+	insert_exam_record($member_id['id'],$level,$question[$i],$correct[$i],$exam_id);
+}
+//$_SESSION["correct"] = $correct;
+//$_SESSION["json_correct"] = json_encode($correct);
+$data[0] = $question;
+$data[1] = $correct;
+$data[2] = $exam_id;
+return $data;
+//return $correct;
+////////////////////////////////////////////////////////製造題目
+}
+function mark_paper($student_answer,$correct,$exam_id)
 {	
 	if(count($student_answer) == count($correct))
 	{
@@ -87,7 +97,7 @@ function mark_paper($student_answer,$correct)
 				$state[$i] = "wrong";
 			}
 		}
-		$empty_id = get_studnet_emypty_id();
+		$empty_id = get_studnet_emypty_id($exam_id);
 		$num_empty_id = count($empty_id);
 		if($empty_id != false)
 		{
@@ -95,7 +105,25 @@ function mark_paper($student_answer,$correct)
 			{
 				modify_exam_record($empty_id[$j]["id"],$student_answer[$j],$state[$j]);
 			}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////計算每次試題得答對率
+			$member_id = $empty_id[0]["member_id"];
+			$exam_log_id = query_exam_log_id($member_id,$exam_id);
+			$total_quiz = query_exam_id_num($member_id,$exam_id);
+			$total_right = query_exam_id_num_right($member_id,$exam_id);
+			$total = (float)$total_quiz["total_quiz"];//總數
+			$right = (float)$total_right["total_right"];//達對數
+			if($right == 0)
+			{	
+				$correct_percent = 0;
+				insert_exam_id_exam_percent($exam_log_id["id"],$correct_percent);//寫入答對率	
+			}
+			else
+			{
+				$correct_percent = round(($right/$total)*100);
+				insert_exam_id_exam_percent($exam_log_id["id"],$correct_percent);//寫入答對率		
+			}
 			
+/////////////////////////////////////////////////////////////////////////////////////////////////////////			
 			echo 1;
 			
 		}
@@ -111,7 +139,8 @@ function mark_paper($student_answer,$correct)
 }
 function empty_paper()
 {		
-	$empty_id = get_studnet_emypty_id();
+	$empty_id = get_leave_id();
+	
 	$num_empty_id = count($empty_id);
 	if($empty_id != false)
 	{
@@ -119,7 +148,9 @@ function empty_paper()
 		{
 			modify_exam_leave($empty_id[$j]["id"]);
 		}	
-		echo "使用者離開判定答案為錯";
+		$exam_log_empty = query_exam_log_empty();
+		modify_exam_log_leave($exam_log_empty["id"]);
+		echo "使用者離開判定答案為錯";		
 	}
 	else
 	{
@@ -157,6 +188,5 @@ function query_level_percent($member_id)
 	}
 		//return json_encode($data);
 		//return query_level_num($member_id,$level[$i]["level"]);
-
 }
 ?>

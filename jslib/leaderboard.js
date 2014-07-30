@@ -1,29 +1,61 @@
 $(document).ready(function(){
-
-	$.post("ajax.php",{mode:"leaderboard_content"},
-		function(response){
-			var json = $.parseJSON(response);
-			//console.log(response);
-			var num_json = json.length ;
-			$("#right_top").append("<div id='leaderboard_div'></div>")
-			for(i=0;i<num_json;i++)
-			{	
-				$("#leaderboard_div").append("<div id='level_div"+json[i][3]["level"]+"' value='"+json[i][3]["level"]+"'>level: "+json[i][3]["level"]+"</div>");
-			}
-		}
-	);
-	$.post("ajax.php",{mode:"leaderboard_item"},
+	 var x = 0
+	if(x==0)
+	{
+		$.post("ajax.php",{mode:"leaderboard_level"},
 			function(response){
 				var json = $.parseJSON(response);
 				var num_json = json.length ;
 				$("#right_top").append("<div id='leaderboard_div'></div>")
 				for(i=0;i<num_json;i++)
 				{	
-					$("#leaderboard_div").append("<div id='level_div"+json[i][3]["level"]+"' value='"+json[i][3]["level"]+"'>level: "+json[i][3]["level"]+"</div>");
+					$("#leaderboard_div").append("<div id='level_div"+json[i][0]['level']+"' value='"+json[i][0]['level']+"'>level: "+json[i][0]['level']+"</div>");
+					$.post("ajax.php",{mode:"leaderboard_content",level: json[i][0]['level']},
+						function(response){
+							var json = $.parseJSON(response);
+							var num_json = json.length;
+							for(j=0;j<num_json;j++)
+							{		
+								$("#level_div"+i).append("<div>"+(j+1)+"."+json[j]['account']+": "+json[j]['state_num']+"</div>");
+							}
+							
+						}
+					);
+				
+					//$("#level_div"+json[i][0]['level']).append(json[i][1]['name']+": "+json[i][1]['state_unm']"");
 				}
 			}
 		);
-
+		x++;
+	}
+	setInterval(function(){	
+	$.post("ajax.php",{mode:"leaderboard_level"},
+		function(response){
+			var json = $.parseJSON(response);
+			var num_json = json.length ;
+			$("#leaderboard_div").empty()
+			for(i=0;i<num_json;i++)
+			{	
+				$("#leaderboard_div").append("<div id='level_div"+json[i][0]['level']+"' value='"+json[i][0]['level']+"'>level: "+json[i][0]['level']+"</div>");
+				$.post("ajax.php",{mode:"leaderboard_content",level: json[i][0]['level']},
+					function(response){
+						var json = $.parseJSON(response);
+						var num_json = json.length;
+						//console.log(num_json);
+						for(j=0;j<num_json;j++)
+						{		
+							$("#level_div"+i).append("<div>"+(j+1)+"."+json[j]['account']+": "+json[j]['state_num']+"</div>");
+						}
+						
+					}
+				);
+				//$("#level_div"+json[i][0]['level']).append(json[i][1]['name']+": "+json[i][1]['state_unm']"");
+				
+			}
+		}
+	);
+	
+},5000);
 
 
 	/* var x = 0

@@ -135,11 +135,35 @@ $db = new MYSQL_DB(db_host, db, db_user, db_passwd);
 			//return $data;
 	}
 }
-function get_studnet_emypty_id()
+function get_studnet_emypty_id($exam_id)
 {
 	$db = new MYSQL_DB(db_host, db, db_user, db_passwd);
 	$db->connect();
-	$query = "SELECT `id` FROM `exam_record` WHERE `student` IS NULL";
+	$query = "SELECT `id`,`member_id` FROM `exam_record` WHERE `student` IS NULL AND `exam_id` = '$exam_id'";
+	$result = $db->query($query);
+	$num_rows = $db->row_size();
+	if($num_rows==0)
+	{
+		$db->close();
+		return false;
+	}
+	else
+	{	
+		for($i=0;$i<$num_rows;$i++)
+		{
+			$data[$i] = $db->fetch_assoc();
+		}
+			
+			$db->close();
+			return $data;
+			//return $data;
+	}
+}
+function get_leave_id()
+{
+	$db = new MYSQL_DB(db_host, db, db_user, db_passwd);
+	$db->connect();
+	$query = "SELECT `id`,`member_id` FROM `exam_record` WHERE `student` IS NULL";
 	$result = $db->query($query);
 	$num_rows = $db->row_size();
 	if($num_rows==0)
@@ -208,11 +232,11 @@ function get_level_member($level)
 		//return $data;
 	}
 }
-function get_exam_right_num($level,$member_id)
+function get_exam_right_num($level)
 {
 	$db = new MYSQL_DB(db_host, db, db_user, db_passwd);
 	$db->connect();
-	$query = "SELECT distinct `member_id`,`name`,(SELECT count(*) FROM `exam_record`,`member` where `exam_record`.`member_id`=`member`.`id` AND `level`='1' AND `member_id`='2' AND `state`='right') AS `state_num`  FROM `exam_record`,`member` where `exam_record`.`member_id`=`member`.`id` AND `level`='$level' AND `member_id`='$member_id' AND `state`='right'";
+	$query = "SELECT `account`,COUNT(*) AS `state_num` FROM `exam_record`,`member` WHERE `exam_record`.`member_id` = `member`.`id` AND `state`='right' AND `level`='$level' GROUP BY `member_id` ORDER BY `state_num` DESC LIMIT 3";
 	//$query = "SELECT A1.member_id AS member_id, COUNT( A1.state =  'right' AND  `level` =  '$level' ) AS  'right' FROM exam_record AS A1 GROUP BY A1.member_id";
 	$result = $db->query($query);
 	$num_rows = $db->row_size();
@@ -303,11 +327,11 @@ function query_personal_level($member_id)
 			//return $data;
 	}
 }
-function query_level_num($member_id,$level)
+function query_exam_id_num($member_id,$exam_id)
 {
 	$db = new MYSQL_DB(db_host, db, db_user, db_passwd);
 	$db->connect();
-	$query = "SELECT COUNT(*) AS `total_quiz` FROM `exam_record` WHERE `member_id` = '$member_id' AND `level` = '$level'";
+	$query = "SELECT COUNT(*) AS `total_quiz` FROM `exam_record` WHERE `member_id` = '$member_id' AND `exam_id` = '$exam_id'";
 	$result = $db->query($query);
 	$num_rows = $db->row_size();
 	if($num_rows==0)
@@ -326,11 +350,110 @@ function query_level_num($member_id,$level)
 			//return $data;
 	}
 }
-function query_level_num_right($member_id,$level)
+function query_exam_id_num_right($member_id,$exam_id)
 {
 	$db = new MYSQL_DB(db_host, db, db_user, db_passwd);
 	$db->connect();
-	$query = "SELECT COUNT(*) AS `total_right` FROM `exam_record` WHERE `member_id` = '$member_id' AND `level` = '$level' AND `state` = 'right'";
+	$query = "SELECT COUNT(*) AS `total_right` FROM `exam_record` WHERE `member_id` = '$member_id' AND `exam_id` = '$exam_id' AND `state` = 'right'";
+	$result = $db->query($query);
+	$num_rows = $db->row_size();
+	if($num_rows==0)
+	{
+		$db->close();
+		return false;
+	}
+	else
+	{	
+		for($i=0;$i<$num_rows;$i++)
+		{
+			$data = $db->fetch_assoc();
+		}			
+			$db->close();
+			return $data;
+			//return $data;
+	}
+}
+function query_quiz_member_id($level)
+{
+
+	$db = new MYSQL_DB(db_host, db, db_user, db_passwd);
+	$db->connect();
+	$query = "SELECT distinct `member_id` FROM exam_record WHERE `level`='$level'";
+	$result = $db->query($query);
+	$num_rows = $db->row_size();
+	if($num_rows==0)
+	{
+		$db->close();
+		return false;
+	}
+	else
+	{	
+		for($i=0;$i<$num_rows;$i++)
+		{
+			$data[$i] = $db->fetch_assoc();
+		}			
+			$db->close();
+			return $data;
+			//return $data;
+	}
+}
+function query_exam_id($member_id)//找出最大的exam_id 每次把exam_id+1當作一次考試
+{
+	$db = new MYSQL_DB(db_host, db, db_user, db_passwd);
+	$db->connect();
+	$query = "SELECT MAX(`exam_id`) AS `max_exam_id` FROM `exam_log` WHERE `member_id`='$member_id'";
+	$result = $db->query($query);
+	$num_rows = $db->row_size();
+	if($num_rows==0)
+	{
+		$db->close();
+		return false;
+	}
+	else
+	{	
+		for($i=0;$i<$num_rows;$i++)
+		{
+			$data = $db->fetch_assoc();
+		}			
+			$db->close();
+		if(empty($data["max_exam_id"])== true)
+		{
+			return false ;
+		}
+		else
+		{
+			return $data["max_exam_id"];
+		}
+	}
+}
+function query_exam_log_id($member_id,$exam_id)
+{
+	$db = new MYSQL_DB(db_host, db, db_user, db_passwd);
+	$db->connect();
+	$query = "SELECT `id` FROM `exam_log` WHERE `member_id`='$member_id' AND `exam_id`='$exam_id'";
+	$result = $db->query($query);
+	$num_rows = $db->row_size();
+	if($num_rows==0)
+	{
+		$db->close();
+		return false;
+	}
+	else
+	{	
+		for($i=0;$i<$num_rows;$i++)
+		{
+			$data = $db->fetch_assoc();
+		}			
+			$db->close();
+			return $data;
+			//return $data;
+	}
+}
+function query_exam_log_empty()
+{
+	$db = new MYSQL_DB(db_host, db, db_user, db_passwd);
+	$db->connect();
+	$query = "SELECT `id` FROM `exam_log` WHERE `correct_percent` IS NULL";
 	$result = $db->query($query);
 	$num_rows = $db->row_size();
 	if($num_rows==0)

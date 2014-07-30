@@ -10,18 +10,13 @@ require("phplib/mysql_insert.lib.php");//generate_quiz()
 //var_dump($json_correct);
 $level = $_POST["level"];
 $total_exam_quiz = $_POST["total_exam_quiz"];
-
 $account = $_SESSION["account"];
 $data = process_exam_question($account,$total_exam_quiz,$level);
-
 $rand_quiz = generate_quiz($total_exam_quiz,$data,$account,$level);
-
+$json_exam_id = json_encode($rand_quiz[2]);
 $json_correct = json_encode($rand_quiz[1]);
-
 $json_quiz = json_encode($rand_quiz[0]);
-
 $json_data = json_encode($data); 
-
 ?>
 <html>
 <head>
@@ -66,6 +61,7 @@ $(document).ready(function(){
 	var json_data =  <?php echo $json_data?>;
 	var json_quiz =  <?php echo $json_quiz?>;
 	var json_correct = <?php echo $json_correct?>;
+	var json_exam_id =  <?php echo $json_exam_id?>;
 	var num_quiz = json_quiz.length;
 	var num_question = json_data.length;
 	var num_selection = json_data[0].length;
@@ -94,7 +90,7 @@ $(document).ready(function(){
 		{	
 			student_answer[i] = $("#selection_td"+i+" input:checked").val();
 		}
-		$.post("ajax.php",{mode: "student_answer",student_answer: student_answer,correct: json_correct},
+		$.post("ajax.php",{mode: "student_answer",student_answer: student_answer,correct: json_correct,exam_id: json_exam_id},
 			function(response){
 				if(response == 3)
 				{

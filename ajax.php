@@ -7,7 +7,7 @@ require("phplib/mysql_insert.lib.php");//generate_quiz()
 $mode = $_POST["mode"];
 									//SESSION
 //////////////////////////////////////////////////////////////////////////////////////
-$member_id = $_SESSION['member_id'];
+$session_member_id = $_SESSION['member_id'];
 //////////////////////////////////////////////////////////////////////////////////////
 	if($mode == "login")
 	{	
@@ -34,29 +34,29 @@ $member_id = $_SESSION['member_id'];
 	{
 		$student_answer = $_POST["student_answer"];
 		$correct = $_POST["correct"];
-		mark_paper($student_answer,$correct); 
+		$exam_id = $_POST["exam_id"];
+		mark_paper($student_answer,$correct,$exam_id); 
 	}
-	 elseif($mode == "leaderboard_item")
+	 elseif($mode == "leaderboard_level")
 	{	
-		$personal_level = query_personal_level($member_id);
+		$personal_level = query_personal_level($session_member_id);
 		$num_personal_level = count($personal_level);
 		for($i=0;$i<$num_personal_level;$i++)
 		{
-			$num_right[$i][3] = $personal_level[$i];
-
+			$data[$i][0] = $personal_level[$i];
 		}
-		echo json_encode($num_right);
-		//var_dump($member_id);
+		echo json_encode($data);
+		//var_dump($data);		
 	} 
-	elseif($mode == "leaderboard_item")
+	elseif($mode == "leaderboard_content")
 	{	
-		$personal_level = query_personal_level($member_id);
-		$num_personal_level = count($personal_level);
-		for($i=0;$i<$num_personal_level;$i++)
-		{
-			$num_right[$i] = $personal_level[$i];
-			
-		}
+		$level = $_POST["level"];
+		$member_in_level = get_exam_right_num($level);
+
+
+		echo json_encode($member_in_level);
+		
+		//var_dump($member_in_level);
 	}
 	elseif($mode == "query_level")
 	{	
