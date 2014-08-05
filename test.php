@@ -19,4 +19,7 @@ else
 } 	
 var_dump($exam_id);
  */
+$data = select_total_exam_quiz(2);
+$aa = $data["total_exam_quiz"];
+echo $aa;
 ?>

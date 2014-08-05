@@ -7,20 +7,23 @@ function process_exam_question($account,$total_exam_quiz,$level)
 		if(empty($level) == false)
 		{
 			$num_word = count(get_lesson_level($level));
-			$num_item_in_quiz = floor($num_word/$total_exam_quiz);
+			//$num_item_in_quiz = floor($num_word/$total_exam_quiz);//2014/8/3
+			$num_item_in_quiz = 4;
+			//$total_exam_quiz = floor($num_word/$num_item_in_quiz);//2014/8/5
+			$word_num = $num_item_in_quiz*$total_exam_quiz;
 			if($num_word<$total_exam_quiz)//12(資料庫有幾個單字)$num_word/3(實際可出題數)$total_exam_quiz=4(一題裡的有幾個選項)$num_item_in_quiz
 			{
 				echo 0;//實際可出題數太多無法出題
 			}
 			else
 			{
-				if(select_lesson_level($level,$num_item_in_quiz,$total_exam_quiz) == false)
+				if(select_lesson_level($level,$word_num) == false)
 				{
 					echo 1;//資料庫有問題
 				}
 				else
 				{
-					$quiz = select_lesson_level($level,$num_item_in_quiz,$total_exam_quiz);//mysql_select.lib.php
+					$quiz = select_lesson_level($level,$word_num);//mysql_select.lib.php
 					$data = array();
 					$a = 0;
 					for($i=0;$i<$total_exam_quiz;$i++)
@@ -31,11 +34,8 @@ function process_exam_question($account,$total_exam_quiz,$level)
 							$data[$i][$j] = $quiz[$a];
 							$a++;
 						}
-					}	
-
-					
+					}
 					return $data;
-					
 				}
 			}
 		}

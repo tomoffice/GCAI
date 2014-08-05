@@ -90,11 +90,11 @@ function get_lesson_level($level)
 		return $data;
 	}
 }
-function select_lesson_level($level,$num_item_in_quiz,$total_exam_quiz)
+function select_lesson_level($level,$word_num)
 {
 	$db = new MYSQL_DB(db_host, db, db_user, db_passwd);
 	$db->connect();
-	$query = "SELECT * FROM word WHERE level='$level' ORDER by RAND()";
+	$query = "SELECT * FROM word WHERE level='$level' ORDER by RAND() LIMIT $word_num";
 	$result = $db->query($query);
 	$num_rows = $db->row_size();
 	if($num_rows==0)
@@ -109,6 +109,26 @@ function select_lesson_level($level,$num_item_in_quiz,$total_exam_quiz)
 			$data[$i] = $db->fetch_assoc();
 		}
 			
+			$db->close();
+			return $data;
+			//return $data;
+	}
+}
+function select_total_exam_quiz($level)
+{
+	$db = new MYSQL_DB(db_host, db, db_user, db_passwd);
+	$db->connect();
+	$query = "SELECT ROUND(COUNT(*)/4) AS `total_exam_quiz` FROM `word` WHERE `level`='$level'";
+	$result = $db->query($query);
+	$num_rows = $db->row_size();
+	if($num_rows==0)
+	{
+		$db->close();
+		return false;
+	}
+	else
+	{	
+			$data = $db->fetch_assoc();
 			$db->close();
 			return $data;
 			//return $data;
@@ -454,6 +474,53 @@ function query_exam_log_empty()
 	$db = new MYSQL_DB(db_host, db, db_user, db_passwd);
 	$db->connect();
 	$query = "SELECT `id` FROM `exam_log` WHERE `correct_percent` IS NULL";
+	$result = $db->query($query);
+	$num_rows = $db->row_size();
+	if($num_rows==0)
+	{
+		$db->close();
+		return false;
+	}
+	else
+	{	
+		for($i=0;$i<$num_rows;$i++)
+		{
+			$data = $db->fetch_assoc();
+		}			
+			$db->close();
+			return $data;
+			//return $data;
+	}
+}
+//SELECT count(*) AS `pass_num` FROM exam_log WHERE `member_id`='2' AND `level`='1';
+function query_exam_num($member_id,$level,$level_conf)
+{
+	$db = new MYSQL_DB(db_host, db, db_user, db_passwd);
+	$db->connect();
+	$query = "SELECT COUNT(*) AS `pass_num` FROM `exam_log` WHERE `member_id`='$member_id' AND `level`='$level' AND `correct_percent` > (SELECT `pass_num` FROM `exam_conf` WHERE `level`='$level_conf')";
+	$result = $db->query($query);
+	$num_rows = $db->row_size();
+	if($num_rows==0)
+	{
+		$db->close();
+		return false;
+	}
+	else
+	{	
+		for($i=0;$i<$num_rows;$i++)
+		{
+			$data = $db->fetch_assoc();
+		}			
+			$db->close();
+			return $data;
+			//return $data;
+	}
+}
+function query_exam_conf_pass_limit($level_conf)
+{
+	$db = new MYSQL_DB(db_host, db, db_user, db_passwd);
+	$db->connect();
+	$query = "SELECT `level_limit` FROM `exam_conf` WHERE `level`='$level_conf'";
 	$result = $db->query($query);
 	$num_rows = $db->row_size();
 	if($num_rows==0)

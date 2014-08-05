@@ -9,8 +9,10 @@ require("phplib/mysql_insert.lib.php");//generate_quiz()
 //var_dump($_SESSION["json_quiz"]);
 //var_dump($json_correct);
 $level = $_POST["level"];
-$total_exam_quiz = $_POST["total_exam_quiz"];
 $account = $_SESSION["account"];
+//$total_exam_quiz = $_POST["total_exam_quiz"];
+$total_exam_quiz_tmp = select_total_exam_quiz($level);//單字/4(4個選擇項目) 搜尋可以出的題數
+$total_exam_quiz = $total_exam_quiz_tmp["total_exam_quiz"];
 $data = process_exam_question($account,$total_exam_quiz,$level);
 $rand_quiz = generate_quiz($total_exam_quiz,$data,$account,$level);
 $json_exam_id = json_encode($rand_quiz[2]);

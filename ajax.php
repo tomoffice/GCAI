@@ -39,11 +39,10 @@ $session_member_id = $_SESSION['member_id'];
 	}
 	 elseif($mode == "leaderboard_level")
 	{	
-		$personal_level = query_personal_level($session_member_id);
-		$num_personal_level = count($personal_level);
-		for($i=0;$i<$num_personal_level;$i++)
+		$data["level"] = query_personal_level($session_member_id);
+		for($i=0;$i<count($data["level"]);$i++)
 		{
-			$data[$i][0] = $personal_level[$i];
+			$data["level_item"][$i]= get_exam_right_num($data["level"][$i]["level"]);
 		}
 		echo json_encode($data);
 		//var_dump($data);		
@@ -52,8 +51,6 @@ $session_member_id = $_SESSION['member_id'];
 	{	
 		$level = $_POST["level"];
 		$member_in_level = get_exam_right_num($level);
-
-
 		echo json_encode($member_in_level);
 		
 		//var_dump($member_in_level);
@@ -62,12 +59,23 @@ $session_member_id = $_SESSION['member_id'];
 	{	
 		$level = query_level();
 		$num_level = count($level);
+		$level_conf = 1;//關卡難度條件 exam_conf
+		$level_limit = query_exam_conf_pass_limit($level_conf);//第一關要過5提要80%以上才會顯示下一關題目
 		for($i=0;$i<$num_level;$i++)
 		{
-			$data[$i][0] = $level[$i]["level"];
+			$pass_num[$i] = query_exam_num($member_id,$level[$i]["level"],$level_conf);
+			if(empty($pass_num[$i]['pass_num']) == true)
+			{
+				$pass_num[$i]['pass_num'] = 0;
+			}
+			if($pass_num[$i]['pass_num'] >= $level_limit['level_limit'])
+			{	
+				$data[$i+1] = $level[$i+1]["level"];
+			}
 		}
-		$data = json_encode($data);
+		$data[0] = $level[0]["level"];
+		$data1 = json_encode($data);
 		//$data = query_level_percent($member_id);
-		echo $data;
+		echo $data1;
 	}
 ?> 
