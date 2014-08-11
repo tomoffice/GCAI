@@ -19,7 +19,11 @@ else
 } 	
 var_dump($exam_id);
  */
-$data = select_total_exam_quiz(2);
-$aa = $data["total_exam_quiz"];
-echo $aa;
+		$level_node = query_level_node();
+		$num_level_node = count($level_node);
+		for($i=0;$i<$num_level_node;$i++)
+		{
+			$data[$i] = $level_node[$i]["level_node"];
+		}
+		var_dump($data);
 ?>

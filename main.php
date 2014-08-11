@@ -13,7 +13,7 @@
 <div id="head">head</div>
 <div id="main">main
 	<div class="content">
-		<div class="left">left
+		<div class="left">技能樹
 		<div class="skill">
 
 		</div>

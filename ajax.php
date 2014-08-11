@@ -55,7 +55,7 @@ $session_member_id = $_SESSION['member_id'];
 		
 		//var_dump($member_in_level);
 	}
-	elseif($mode == "query_level")
+	/* elseif($mode == "query_level")
 	{	
 		$level = query_level();
 		$num_level = count($level);
@@ -74,8 +74,32 @@ $session_member_id = $_SESSION['member_id'];
 			}
 		}
 		$data[0] = $level[0]["level"];
-		$data1 = json_encode($data);
+		$json_data = json_encode($data);
 		//$data = query_level_percent($member_id);
-		echo $data1;
+		echo $json_data;
+	} */
+	elseif($mode == "query_level")
+	{	
+		$level_node = $_POST["level_node"];
+		$level = query_level($level_node);
+		$num_level = count($level);
+		for($i=0;$i<$num_level;$i++)
+		{
+			$data[$i] = $level[$i]['level'];
+		}
+		$json_data = json_encode($data);
+		echo $json_data;
+		//var_dump($level);
+	}
+	elseif($mode == "query_level_node")
+	{
+		$level_node = query_level_node();
+		$num_level_node = count($level_node);
+		for($i=0;$i<$num_level_node;$i++)
+		{
+			$data[$i] = $level_node[$i]["level_node"];
+		}
+		$json_data = json_encode($data);
+		echo $json_data;
 	}
 ?> 

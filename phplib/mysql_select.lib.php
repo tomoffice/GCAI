@@ -301,11 +301,34 @@ function get_member_account($member_id)
 			//return $data;
 	}
 }
-function query_level()
+function query_level($level_node)
 {
 	$db = new MYSQL_DB(db_host, db, db_user, db_passwd);
 	$db->connect();
-	$query = "SELECT `level` FROM `word` GROUP BY `level`";
+	$query = "SELECT `level` FROM `word` WHERE `level_node`='$level_node' GROUP BY `level`";
+	$result = $db->query($query);
+	$num_rows = $db->row_size();
+	if($num_rows==0)
+	{
+		$db->close();
+		return false;
+	}
+	else
+	{	
+		for($i=0;$i<$num_rows;$i++)
+		{
+			$data[$i] = $db->fetch_assoc();
+		}			
+			$db->close();
+			return $data;
+			//return $data;
+	}
+}
+function query_level_node()
+{
+	$db = new MYSQL_DB(db_host, db, db_user, db_passwd);
+	$db->connect();
+	$query = "SELECT `level_node` FROM `word` GROUP BY `level_node`";
 	$result = $db->query($query);
 	$num_rows = $db->row_size();
 	if($num_rows==0)
