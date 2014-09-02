@@ -4,10 +4,13 @@ require("phplib/tool.lib.php"); //login_chk() chk_login_state()
 require("phplib/mysql_select.lib.php");//chk_member_account() get_member_password()
 require("phplib/quiz.lib.php");//process_exam_question()
 require("phplib/mysql_insert.lib.php");//generate_quiz()
+require("phplib/mysql_delete.lib.php");//generate_quiz()
+require("phplib/level_process.lib.php");
 $mode = $_POST["mode"];
 									//SESSION
 //////////////////////////////////////////////////////////////////////////////////////
 $session_member_id = $_SESSION['member_id'];
+$account = $_SESSION["account"];
 //////////////////////////////////////////////////////////////////////////////////////
 	if($mode == "login")
 	{	
@@ -37,8 +40,9 @@ $session_member_id = $_SESSION['member_id'];
 		$exam_id = $_POST["exam_id"];
 		mark_paper($student_answer,$correct,$exam_id); 
 	}
-	 elseif($mode == "leaderboard_level")
+	/*  elseif($mode == "leaderboard_level_week")
 	{	
+		query_exam_record_week($level_node);
 		$data["level"] = query_personal_level($session_member_id);
 		for($i=0;$i<count($data["level"]);$i++)
 		{
@@ -54,7 +58,7 @@ $session_member_id = $_SESSION['member_id'];
 		echo json_encode($member_in_level);
 		
 		//var_dump($member_in_level);
-	}
+	} */
 	/* elseif($mode == "query_level")
 	{	
 		$level = query_level();
@@ -82,6 +86,7 @@ $session_member_id = $_SESSION['member_id'];
 	{	
 		$level_node = $_POST["level_node"];
 		$level = query_level($level_node);
+		//$_SESSION["level_node"] = $level_node;
 		$num_level = count($level);
 		for($i=0;$i<$num_level;$i++)
 		{
@@ -101,5 +106,61 @@ $session_member_id = $_SESSION['member_id'];
 		}
 		$json_data = json_encode($data);
 		echo $json_data;
+	}
+	elseif($mode == "generate_quiz")
+	{
+		//$total_exam_quiz_tmp = select_total_exam_quiz($level);//單字/4(4個選擇項目) 搜尋可以出的題數
+		//$total_exam_quiz = $total_exam_quiz_tmp["total_exam_quiz"];
+		$level = $_POST["level"];
+		$level_node = $_POST["level_node"];
+		$total_exam_quiz = 1;
+		$data = process_exam_question($total_exam_quiz,$level);
+		$rand_quiz = generate_quiz($total_exam_quiz,$data,$session_member_id,$level,$exam_id,$level_node);
+		$anser_data[0] = $data;
+		$anser_data[1] = $rand_quiz;
+		$json_data = json_encode($anser_data);
+		echo $json_data;
+	}
+	elseif($mode == "insert_exam_record")
+	{
+		$member_id = $_POST["member_id"];
+		$level = $_POST["level"];
+		$correct = $_POST["correct"];
+		$exam_id = $_POST["exam_id"];
+		$level_node = $_POST["level_node"];
+///////////////////////////////////////////////////////////////////////////////////////經驗值加總
+		if(check_state_xp($member_id) == false)							////////////假如state沒有member紀錄
+		{
+			insert_state_xp($member_id);								////////////新增一筆memeber紀錄
+			$xp = $correct;												////////////新增第一次答對紀錄
+			update_state_xp($xp,$member_id);							////////////更新經驗紀錄
+			level_process($member_id);									////////////更新個人等級紀錄
+		}
+		else
+		{	
+			$correct_in_db = query_member_correct($member_id);			////////////查詢之前member答對的紀錄
+			$xp = $correct+$correct_in_db;								////////////以前答對紀錄加上本次考試紀錄
+			update_state_xp($xp,$member_id);							////////////更新經驗紀錄
+			level_process($member_id);									////////////更新個人等級紀錄
+		}
+///////////////////////////////////////////////////////////////////////////////////////		
+		insert_exam_record($member_id,$level,$correct,$exam_id,$level_node); //////////新增一筆考試紀錄
+		echo "提交完成";
+	}
+	elseif($mode == "learn_progress")
+	{
+		$data = query_exam_record_week($session_member_id);
+		$json_data = json_encode($data);
+		echo $json_data;
+		//var_dump($data);
+	}
+	elseif($mode == "p_level")
+	{
+		$data[0] = query_state_p_level($session_member_id);
+		$data[1] = query_state_xp($session_member_id);
+		$data[2] = $data[1]%60;
+		$json_data = json_encode($data);
+		echo $json_data;
+	
 	}
 ?> 

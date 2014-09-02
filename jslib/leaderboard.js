@@ -1,8 +1,12 @@
 $(document).ready(function(){
-	var x = 0;
+
+	
+
+	
+	/* var x = 0;
 	if(x == 0)
 	{
-		$.post("ajax.php",{mode:"leaderboard_level"},
+		$.post("ajax.php",{mode:"leaderboard_level_week"},
 			function(response){
 				var json = $.parseJSON(response);
 				$("#right_top").append("<div id='leaderboard_div'></div>")
@@ -21,7 +25,7 @@ $(document).ready(function(){
 	}
 	setInterval(function(){	
 		$("#leaderboard_div").empty()
-		$.post("ajax.php",{mode:"leaderboard_level"},
+		$.post("ajax.php",{mode:"leaderboard_level_week"},
 			function(response){
 				var json = $.parseJSON(response);
 				$("#right_top").append("<div id='leaderboard_div'></div>")
@@ -36,7 +40,11 @@ $(document).ready(function(){
 				}
 			}
 		);
-	},5000);
+	},5000); */
 });
+
+
+
+
 
 

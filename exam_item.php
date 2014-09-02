@@ -9,7 +9,7 @@ $json_level_node = json_encode($level_node);
 <link type="text/css" rel="stylesheet" href="css/exam_item.css">
 <script src="jquery/jquery-1.7.js"></script>
 <script type="text/javascript">
-	var json_level_node = <?php echo $json_level_node?>;
+	json_level_node = <?php echo $json_level_node?>;//變成全域變數
 	$(document).ready(function(){
 		$.post("ajax.php",{mode: "query_level" ,level_node: json_level_node},
 			function(response){
@@ -17,7 +17,7 @@ $json_level_node = json_encode($level_node);
 				var num_level_node = json.length;
 				for(i=0;i<num_level_node;i++)
 				{
-					$("#level").append("<div value='"+json[i]+"' style='display:inline-block; border:1px solid #000; height:60px; width:100px;'>"+json[i]+"<form id='quiz"+json[i]+"' action='exam.php' method='post' name='quiz_form'><input type='hidden' name='level' value='"+json[i]+"' /></form></div>");
+					$("#level").append("<div value='"+json[i]+"' style='display:inline-block; border:1px solid #000; height:60px; width:100px;'>"+json[i]+"<form id='quiz"+json[i]+"' action='exam.php' method='post' name='quiz_form'><input type='hidden' name='level' value='"+json[i]+"' /> <input type='hidden' name='level_node' value='"+json_level_node+"' /></form></div>");
 				}
 			}
 		);
